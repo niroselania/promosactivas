@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Promos activas</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --ink: #202124;
+      --muted: #65707a;
+      --line: #d8dee4;
+      --panel: #ffffff;
+      --soft: #f5f7f9;
+      --brand: #0f766e;
+      --brand-dark: #115e59;
+      --accent: #b45309;
+      --danger: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      padding: 18px 24px;
+    }
+
+    .header-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 22px auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .toolbar,
+    .summary,
+    .empty-state,
+    .table-shell {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .file-box {
+      display: grid;
+      gap: 7px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--ink);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(122px, 1fr));
+      gap: 8px;
+    }
+
+    button {
+      min-height: 42px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: var(--brand);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0 14px;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: var(--brand-dark);
+    }
+
+    button.secondary {
+      background: #ffffff;
+      color: var(--brand-dark);
+      border-color: var(--brand);
+    }
+
+    button.secondary:hover {
+      background: #eef7f6;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+      color: var(--muted);
+    }
+
+    .summary strong {
+      color: var(--ink);
+    }
+
+    .error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .empty-state {
+      padding: 42px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--ink);
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .table-shell {
+      overflow: auto;
+      max-height: calc(100vh - 230px);
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+      max-width: 360px;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #ecfdf5;
+      color: #064e3b;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        padding: 16px;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="header-inner">
+        <h1>Promos activas</h1>
+        <div class="status" id="fileStatus">Sin planilla cargada</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="toolbar" aria-label="Controles">
+        <div class="file-box">
+          <label for="excelFile">Subir planilla Excel</label>
+          <input id="excelFile" type="file" accept=".xlsx,.xls,.xlsm,.csv">
+        </div>
+
+        <div class="actions">
+          <button id="btnSuipacha" type="button" disabled>Suipacha</button>
+          <button id="btnBariloche" type="button" disabled>Bariloche</button>
+          <button id="btnDatos" class="secondary" type="button" disabled>Datos útiles</button>
+        </div>
+      </section>
+
+      <section class="summary" aria-live="polite">
+        <span id="resultTitle"><strong>Resultado:</strong> cargá una planilla y elegí una opción.</span>
+        <span id="resultMeta"></span>
+      </section>
+
+      <section id="emptyState" class="empty-state">
+        <strong>No hay datos para mostrar</strong>
+        La tabla aparecerá acá cuando cargues el archivo y presiones un botón.
+      </section>
+
+      <section id="tableShell" class="table-shell hidden" aria-label="Datos encontrados">
+        <table id="resultTable"></table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      workbook: null,
+      fileName: "",
+      activeData: null,
+      usefulData: null
+    };
+
+    const fileInput = document.getElementById("excelFile");
+    const fileStatus = document.getElementById("fileStatus");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultMeta = document.getElementById("resultMeta");
+    const emptyState = document.getElementById("emptyState");
+    const tableShell = document.getElementById("tableShell");
+    const resultTable = document.getElementById("resultTable");
+    const buttons = {
+      suipacha: document.getElementById("btnSuipacha"),
+      bariloche: document.getElementById("btnBariloche"),
+      datos: document.getElementById("btnDatos")
+    };
+
+    fileInput.addEventListener("change", handleFile);
+    buttons.suipacha.addEventListener("click", () => showBranch("Suipacha"));
+    buttons.bariloche.addEventListener("click", () => showBranch("Bariloche"));
+    buttons.datos.addEventListener("click", showUsefulData);
+
+    function normalizeText(value) {
+      return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+    }
+
+    function cleanCell(value) {
+      if (value instanceof Date) {
+        return value.toLocaleDateString("es-AR");
+      }
+
+      return value == null ? "" : String(value).trim();
+    }
+
+    function setButtonsEnabled(enabled) {
+      Object.values(buttons).forEach((button) => {
+        button.disabled = !enabled;
+      });
+    }
+
+    async function handleFile(event) {
+      const file = event.target.files[0];
+      resetView();
+
+      if (!file) {
+        fileStatus.textContent = "Sin planilla cargada";
+        setButtonsEnabled(false);
+        return;
+      }
+
+      if (!window.XLSX) {
+        showError("No se pudo cargar el lector de Excel. Revisá la conexión a internet y volvé a abrir el archivo.");
+        return;
+      }
+
+      try {
+        const data = await file.arrayBuffer();
+        state.workbook = XLSX.read(data, {
+          type: "array",
+          cellDates: true
+        });
+        state.fileName = file.name;
+        state.activeData = readMainSheet(state.workbook);
+        state.usefulData = readUsefulSheet(state.workbook);
+        fileStatus.textContent = `Planilla cargada: ${file.name}`;
+        setButtonsEnabled(true);
+        resultTitle.innerHTML = "<strong>Resultado:</strong> elegí Suipacha, Bariloche o Datos útiles.";
+        resultMeta.textContent = `${state.workbook.SheetNames.length} pestaña(s) detectada(s)`;
+      } catch (error) {
+        console.error(error);
+        showError("No se pudo leer la planilla. Probá con un archivo Excel válido.");
+        setButtonsEnabled(false);
+      }
+    }
+
+    function readMainSheet(workbook) {
+      const usefulName = findSheetName(workbook, "DATOS UTILES");
+      const mainName = workbook.SheetNames.find((name) => name !== usefulName);
+
+      if (!mainName) {
+        throw new Error("No se encontró una pestaña principal.");
+      }
+
+      return sheetToRecords(workbook.Sheets[mainName]);
+    }
+
+    function readUsefulSheet(workbook) {
+      const usefulName = findSheetName(workbook, "DATOS UTILES");
+
+      if (!usefulName) {
+        return { headers: [], records: [], missing: true };
+      }
+
+      return sheetToRecords(workbook.Sheets[usefulName]);
+    }
+
+    function findSheetName(workbook, targetName) {
+      const target = normalizeText(targetName);
+      return workbook.SheetNames.find((name) => normalizeText(name) === target);
+    }
+
+    function sheetToRecords(sheet) {
+      const rows = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: "",
+        blankrows: false,
+        raw: false
+      });
+
+      if (!rows.length) {
+        return { headers: [], records: [] };
+      }
+
+      const headerRowIndex = findHeaderRowIndex(rows);
+      const rawHeaders = rows[headerRowIndex] || [];
+      const width = getUsefulWidth(rows, headerRowIndex);
+      const headers = makeHeaders(rawHeaders, width);
+      const records = rows.slice(headerRowIndex + 1)
+        .map((row) => headers.reduce((record, header, index) => {
+          record[header] = cleanCell(row[index]);
+          return record;
+        }, {}))
+        .filter((record) => Object.values(record).some((value) => value !== ""));
+
+      return { headers, records };
+    }
+
+    function findHeaderRowIndex(rows) {
+      const sucursalIndex = rows.findIndex((row) =>
+        row.some((cell) => normalizeText(cell) === "sucursal")
+      );
+
+      if (sucursalIndex >= 0) {
+        return sucursalIndex;
+      }
+
+      return rows.findIndex((row) => row.some((cell) => cleanCell(cell) !== "")) || 0;
+    }
+
+    function getUsefulWidth(rows, headerRowIndex) {
+      let width = 0;
+      rows.slice(headerRowIndex).forEach((row) => {
+        row.forEach((cell, index) => {
+          if (cleanCell(cell) !== "") {
+            width = Math.max(width, index + 1);
+          }
+        });
+      });
+      return width;
+    }
+
+    function makeHeaders(rawHeaders, width) {
+      const seen = new Map();
+
+      return Array.from({ length: width }, (_, index) => {
+        const original = cleanCell(rawHeaders[index]);
+        const base = original || `Dato ${index + 1}`;
+        const key = normalizeText(base);
+        const count = seen.get(key) || 0;
+        seen.set(key, count + 1);
+        return count ? `${base} ${count + 1}` : base;
+      });
+    }
+
+    function showBranch(branchName) {
+      if (!state.activeData) {
+        showError("Primero cargá una planilla.");
+        return;
+      }
+
+      const sucursalHeader = state.activeData.headers.find((header) =>
+        normalizeText(header) === "sucursal"
+      );
+
+      if (!sucursalHeader) {
+        showError("No se encontró la columna Sucursal en la pestaña principal.");
+        return;
+      }
+
+      const needle = normalizeText(branchName);
+      const records = state.activeData.records.filter((record) =>
+        normalizeText(record[sucursalHeader]).includes(needle)
+      );
+
+      renderTable(state.activeData.headers, records, branchName, "Sucursal");
+    }
+
+    function showUsefulData() {
+      if (!state.usefulData || state.usefulData.missing) {
+        showError("No se encontró la pestaña DATOS UTILES en la planilla.");
+        return;
+      }
+
+      renderTable(state.usefulData.headers, state.usefulData.records, "Datos útiles", "Pestaña DATOS UTILES");
+    }
+
+    function renderTable(headers, records, title, source) {
+      resultTitle.innerHTML = `<strong>Resultado:</strong> ${escapeHtml(title)}`;
+      resultMeta.textContent = `${records.length} fila(s) encontradas - ${source}`;
+
+      if (!records.length) {
+        resultTable.innerHTML = "";
+        tableShell.classList.add("hidden");
+        emptyState.classList.remove("hidden");
+        emptyState.innerHTML = `<strong>No se encontraron filas</strong>No hay datos para ${escapeHtml(title)} en la planilla cargada.`;
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+      tableShell.classList.remove("hidden");
+
+      const thead = `<thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead>`;
+      const tbody = `<tbody>${records.map((record) => (
+        `<tr>${headers.map((header) => `<td>${escapeHtml(record[header])}</td>`).join("")}</tr>`
+      )).join("")}</tbody>`;
+
+      resultTable.innerHTML = thead + tbody;
+    }
+
+    function resetView() {
+      state.workbook = null;
+      state.fileName = "";
+      state.activeData = null;
+      state.usefulData = null;
+      resultTable.innerHTML = "";
+      resultMeta.textContent = "";
+      resultTitle.innerHTML = "<strong>Resultado:</strong> cargá una planilla y elegí una opción.";
+      emptyState.classList.remove("hidden");
+      emptyState.innerHTML = "<strong>No hay datos para mostrar</strong>La tabla aparecerá acá cuando cargues el archivo y presiones un botón.";
+      tableShell.classList.add("hidden");
+    }
+
+    function showError(message) {
+      resultTitle.innerHTML = `<strong class="error">Error:</strong> ${escapeHtml(message)}`;
+      resultMeta.textContent = "";
+      resultTable.innerHTML = "";
+      tableShell.classList.add("hidden");
+      emptyState.classList.remove("hidden");
+      emptyState.innerHTML = `<strong>Sin resultados</strong>${escapeHtml(message)}`;
+      fileStatus.textContent = state.fileName ? `Planilla cargada: ${state.fileName}` : "Sin planilla cargada";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
