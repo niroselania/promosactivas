@@ -105,8 +105,7 @@
       text-transform: uppercase;
     }
 
-    input,
-    select {
+    input {
       min-height: 42px;
       width: 100%;
       padding: 9px 10px;
@@ -190,9 +189,9 @@
 
     .filters {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px) minmax(180px, 240px) auto;
-      gap: 10px;
-      align-items: end;
+      grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.2fr) minmax(220px, 0.9fr) auto;
+      gap: 12px;
+      align-items: start;
       padding: 14px 16px;
     }
 
@@ -205,6 +204,31 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      min-height: 34px;
+      border-color: var(--line);
+      background: #ffffff;
+      color: var(--ink);
+      font-size: 13px;
+      padding: 0 11px;
+    }
+
+    .chip:hover {
+      background: #f3f4f6;
+    }
+
+    .chip.active {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #ffffff;
     }
 
     .cards {
@@ -233,7 +257,8 @@
 
     .card-title {
       font-weight: 700;
-      font-size: 16px;
+      font-size: 17px;
+      line-height: 1.35;
       overflow-wrap: anywhere;
     }
 
@@ -341,8 +366,16 @@
       padding: 10px 12px;
       text-align: left;
       vertical-align: top;
-      max-width: 360px;
+      max-width: 340px;
       overflow-wrap: anywhere;
+    }
+
+    th.description-cell,
+    td.description-cell {
+      min-width: 430px;
+      max-width: 640px;
+      line-height: 1.45;
+      white-space: normal;
     }
 
     th {
@@ -441,14 +474,14 @@
           <input id="searchInput" type="search" placeholder="Producto, banco, promo, fecha...">
         </div>
 
-        <div id="filterOneBox" class="filter-field hidden">
-          <label id="filterOneLabel" for="filterOne">Filtro 1</label>
-          <select id="filterOne"></select>
+        <div id="operatorFilterBox" class="filter-field hidden">
+          <label>Operadora de tarjeta</label>
+          <div id="operatorButtons" class="chip-group"></div>
         </div>
 
-        <div id="filterTwoBox" class="filter-field hidden">
-          <label id="filterTwoLabel" for="filterTwo">Filtro 2</label>
-          <select id="filterTwo"></select>
+        <div id="statusFilterBox" class="filter-field hidden">
+          <label>Estado de vigencia</label>
+          <div id="statusButtons" class="chip-group"></div>
         </div>
 
         <div class="filter-field">
@@ -476,8 +509,7 @@
   <script>
     const STORAGE_KEY = "promos-activas-ultima-opcion";
     const DATE_WORDS = ["fecha", "vigencia", "hasta", "vto", "vencimiento", "fin"];
-    const PRIORITY_WORDS = ["promo", "promocion", "beneficio", "producto", "descripcion", "detalle", "banco", "tarjeta", "descuento", "vigencia", "hasta", "medio", "rubro", "sucursal"];
-    const FILTER_WORDS = ["banco", "tarjeta", "medio", "rubro", "categoria", "tipo", "descuento"];
+    const PRIORITY_WORDS = ["descripcion de promo", "descripcion promo", "promo", "promocion", "beneficio", "producto", "descripcion", "detalle", "banco", "tarjeta", "descuento", "vigencia", "hasta", "medio", "rubro", "sucursal"];
 
     const state = {
       workbook: null,
@@ -491,7 +523,10 @@
       currentHeaders: [],
       baseRecords: [],
       visibleRecords: [],
-      selectedFilters: [],
+      operatorHeader: "",
+      statusHeader: "",
+      selectedOperator: "",
+      selectedStatus: "",
       viewMode: "cards"
     };
 
@@ -504,12 +539,10 @@
     const cards = document.getElementById("cards");
     const filters = document.getElementById("filters");
     const searchInput = document.getElementById("searchInput");
-    const filterOneBox = document.getElementById("filterOneBox");
-    const filterTwoBox = document.getElementById("filterTwoBox");
-    const filterOneLabel = document.getElementById("filterOneLabel");
-    const filterTwoLabel = document.getElementById("filterTwoLabel");
-    const filterOne = document.getElementById("filterOne");
-    const filterTwo = document.getElementById("filterTwo");
+    const operatorFilterBox = document.getElementById("operatorFilterBox");
+    const statusFilterBox = document.getElementById("statusFilterBox");
+    const operatorButtons = document.getElementById("operatorButtons");
+    const statusButtons = document.getElementById("statusButtons");
     const cardsViewBtn = document.getElementById("cardsViewBtn");
     const tableViewBtn = document.getElementById("tableViewBtn");
     const downloadBtn = document.getElementById("downloadBtn");
@@ -526,8 +559,8 @@
     buttons.bariloche.addEventListener("click", () => showBranch("Bariloche"));
     buttons.datos.addEventListener("click", showUsefulData);
     searchInput.addEventListener("input", applyFilters);
-    filterOne.addEventListener("change", applyFilters);
-    filterTwo.addEventListener("change", applyFilters);
+    operatorButtons.addEventListener("click", handleOperatorClick);
+    statusButtons.addEventListener("click", handleStatusClick);
     cardsViewBtn.addEventListener("click", () => setViewMode("cards"));
     tableViewBtn.addEventListener("click", () => setViewMode("table"));
     downloadBtn.addEventListener("click", downloadResults);
@@ -813,32 +846,52 @@
     }
 
     function setupQuickFilters(headers, records) {
-      const candidates = headers
-        .filter((header) => FILTER_WORDS.some((word) => normalizeText(header).includes(word)))
-        .map((header) => ({
-          header,
-          values: uniqueValues(records, header)
-        }))
-        .filter((item) => item.values.length > 1 && item.values.length <= 30)
-        .slice(0, 2);
+      state.operatorHeader = findHeader(headers, ["operadora de tarjeta", "operadora tarjeta", "operador de tarjeta", "tarjeta operadora"]);
+      state.statusHeader = findHeader(headers, ["estado de vigencia", "estado vigencia", "vigencia estado"]);
+      state.selectedOperator = "";
+      state.selectedStatus = "";
 
-      state.selectedFilters = candidates.map((item) => item.header);
-      setupFilterControl(filterOneBox, filterOneLabel, filterOne, candidates[0]);
-      setupFilterControl(filterTwoBox, filterTwoLabel, filterTwo, candidates[1]);
+      setupButtonFilter(operatorFilterBox, operatorButtons, state.operatorHeader ? uniqueValues(records, state.operatorHeader) : [], "operator");
+      setupButtonFilter(statusFilterBox, statusButtons, state.statusHeader ? sortStatusValues(uniqueValues(records, state.statusHeader)) : [], "status");
     }
 
-    function setupFilterControl(box, label, select, config) {
-      if (!config) {
+    function findHeader(headers, aliases) {
+      return headers.find((header) => {
+        const normalized = normalizeText(header);
+        return aliases.some((alias) => normalized === normalizeText(alias) || normalized.includes(normalizeText(alias)));
+      }) || "";
+    }
+
+    function setupButtonFilter(box, container, values, type) {
+      if (!values.length) {
         box.classList.add("hidden");
-        select.innerHTML = "";
+        container.innerHTML = "";
         return;
       }
 
       box.classList.remove("hidden");
-      label.textContent = config.header;
-      select.innerHTML = `<option value="">Todos</option>${config.values.map((value) =>
-        `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
-      ).join("")}`;
+      container.innerHTML = [
+        buttonFilterHtml("Todos", "", type, true),
+        ...values.map((value) => buttonFilterHtml(value, value, type, false))
+      ].join("");
+    }
+
+    function buttonFilterHtml(label, value, type, active) {
+      return `<button class="chip ${active ? "active" : ""}" type="button" data-filter-type="${escapeHtml(type)}" data-filter-value="${escapeHtml(value)}">${escapeHtml(label)}</button>`;
+    }
+
+    function sortStatusValues(values) {
+      const order = ["activada", "activa", "desactivada", "desactiva"];
+      return values.sort((a, b) => {
+        const aIndex = order.indexOf(normalizeText(a));
+        const bIndex = order.indexOf(normalizeText(b));
+
+        if (aIndex >= 0 || bIndex >= 0) {
+          return (aIndex < 0 ? 99 : aIndex) - (bIndex < 0 ? 99 : bIndex);
+        }
+
+        return a.localeCompare(b, "es");
+      });
     }
 
     function uniqueValues(records, header) {
@@ -848,18 +901,43 @@
 
     function applyFilters() {
       const query = normalizeText(searchInput.value);
-      const activeFilterValues = [
-        { header: state.selectedFilters[0], value: filterOne.value },
-        { header: state.selectedFilters[1], value: filterTwo.value }
-      ].filter((item) => item.header && item.value);
 
       state.visibleRecords = state.baseRecords.filter((record) => {
         const matchesSearch = !query || Object.values(record).some((value) => normalizeText(value).includes(query));
-        const matchesFilters = activeFilterValues.every((item) => cleanCell(record[item.header]) === item.value);
-        return matchesSearch && matchesFilters;
+        const matchesOperator = !state.selectedOperator || cleanCell(record[state.operatorHeader]) === state.selectedOperator;
+        const matchesStatus = !state.selectedStatus || cleanCell(record[state.statusHeader]) === state.selectedStatus;
+        return matchesSearch && matchesOperator && matchesStatus;
       });
 
       renderVisibleResults();
+    }
+
+    function handleOperatorClick(event) {
+      const button = event.target.closest("button[data-filter-type='operator']");
+      if (!button) {
+        return;
+      }
+
+      state.selectedOperator = button.dataset.filterValue || "";
+      setChipActive(operatorButtons, state.selectedOperator);
+      applyFilters();
+    }
+
+    function handleStatusClick(event) {
+      const button = event.target.closest("button[data-filter-type='status']");
+      if (!button) {
+        return;
+      }
+
+      state.selectedStatus = button.dataset.filterValue || "";
+      setChipActive(statusButtons, state.selectedStatus);
+      applyFilters();
+    }
+
+    function setChipActive(container, value) {
+      Array.from(container.querySelectorAll(".chip")).forEach((button) => {
+        button.classList.toggle("active", (button.dataset.filterValue || "") === value);
+      });
     }
 
     function renderVisibleResults() {
@@ -999,12 +1077,17 @@
 
     function renderTable() {
       const headers = state.currentHeaders;
-      const thead = `<thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead>`;
+      const thead = `<thead><tr>${headers.map((header) => `<th class="${columnClass(header)}">${escapeHtml(header)}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${state.visibleRecords.map((record) => (
-        `<tr>${headers.map((header) => `<td>${escapeHtml(record[header])}</td>`).join("")}</tr>`
+        `<tr>${headers.map((header) => `<td class="${columnClass(header)}">${escapeHtml(record[header])}</td>`).join("")}</tr>`
       )).join("")}</tbody>`;
 
       resultTable.innerHTML = thead + tbody;
+    }
+
+    function columnClass(header) {
+      const normalized = normalizeText(header);
+      return normalized.includes("descripcion") && normalized.includes("promo") ? "description-cell" : "";
     }
 
     function setViewMode(mode) {
@@ -1052,7 +1135,10 @@
       state.currentHeaders = [];
       state.baseRecords = [];
       state.visibleRecords = [];
-      state.selectedFilters = [];
+      state.operatorHeader = "";
+      state.statusHeader = "";
+      state.selectedOperator = "";
+      state.selectedStatus = "";
       resultTable.innerHTML = "";
       cards.innerHTML = "";
       resultMeta.textContent = "";

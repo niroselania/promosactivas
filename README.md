@@ -12,7 +12,8 @@ App web para cargar una planilla Excel, guardar la informacion en el servidor y 
 - Muestra los nombres reales de las columnas, no letras como Columna A o Columna B.
 - Muestra los resultados en vista de fichas o tabla.
 - Incluye buscador dentro de los resultados.
-- Genera filtros rapidos cuando detecta columnas como banco, tarjeta, rubro, medio o descuento.
+- Genera botones de filtro para `Operadora de Tarjeta`.
+- Genera botones para `Estado de vigencia`, por ejemplo `ACTIVADA` y `DESACTIVADA`.
 - Marca promociones como vigente, por vencer o vencida cuando detecta una columna de fecha/vigencia.
 - Permite descargar el resultado filtrado en Excel.
 - Recuerda la ultima opcion usada al cargar una nueva planilla.
