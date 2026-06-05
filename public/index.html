@@ -117,7 +117,7 @@
 
     .actions {
       display: grid;
-      grid-template-columns: repeat(3, minmax(126px, 1fr));
+      grid-template-columns: repeat(4, minmax(126px, 1fr));
       gap: 8px;
     }
 
@@ -167,23 +167,16 @@
     }
 
     .summary {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 16px;
+      display: block;
+      padding: 0 2px;
       color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 0;
     }
 
     .summary strong {
       color: var(--ink);
-    }
-
-    .summary-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
     }
 
     .filters {
@@ -335,7 +328,7 @@
 
     .table-shell {
       overflow: auto;
-      max-height: calc(100vh - 310px);
+      max-height: calc(100vh - 250px);
     }
 
     table {
@@ -413,13 +406,8 @@
 
     @media (max-width: 900px) {
       .toolbar,
-      .filters,
-      .summary {
+      .filters {
         grid-template-columns: 1fr;
-      }
-
-      .summary-actions {
-        justify-content: flex-start;
       }
     }
 
@@ -464,18 +452,14 @@
         <div class="actions">
           <button id="btnSuipacha" type="button" disabled>Suipacha</button>
           <button id="btnBariloche" type="button" disabled>Bariloche</button>
+          <button id="downloadBtn" class="secondary" type="button" disabled>Descargar resultado</button>
           <button id="btnDatos" class="secondary" type="button" disabled>Datos útiles</button>
         </div>
       </section>
 
       <section class="summary" aria-live="polite">
-        <div>
-          <span id="resultTitle"><strong>Resultado:</strong> cargá una planilla y elegí una opción.</span>
-          <span id="resultMeta"></span>
-        </div>
-        <div class="summary-actions">
-          <button id="downloadBtn" class="ghost" type="button" disabled>Descargar resultado</button>
-        </div>
+        <span id="resultTitle"><strong>Resultado:</strong> cargá una planilla y elegí una opción.</span>
+        <span id="resultMeta"></span>
       </section>
 
       <section id="filters" class="filters hidden" aria-label="Filtros">
