@@ -10,6 +10,12 @@ App HTML para cargar una planilla Excel y consultar promociones por sucursal.
 - Si una fila dice `Suipacha/Bariloche`, aparece en ambos botones.
 - Boton **Datos utiles**: muestra la informacion de la pestaña `DATOS UTILES`.
 - Muestra los nombres reales de las columnas, no letras como Columna A o Columna B.
+- Muestra los resultados en vista de fichas o tabla.
+- Incluye buscador dentro de los resultados.
+- Genera filtros rapidos cuando detecta columnas como banco, tarjeta, rubro, medio o descuento.
+- Marca promociones como vigente, por vencer o vencida cuando detecta una columna de fecha/vigencia.
+- Permite descargar el resultado filtrado en Excel.
+- Recuerda la ultima opcion usada al cargar una nueva planilla.
 
 ## Ejecutar con Docker
 

@@ -8,13 +8,15 @@
   <style>
     :root {
       --ink: #202124;
-      --muted: #65707a;
+      --muted: #667085;
       --line: #d8dee4;
       --panel: #ffffff;
-      --soft: #f5f7f9;
+      --soft: #f6f8fa;
       --brand: #0f766e;
       --brand-dark: #115e59;
-      --accent: #b45309;
+      --blue: #1d4ed8;
+      --amber: #b45309;
+      --green: #047857;
       --danger: #b42318;
     }
 
@@ -40,11 +42,11 @@
     header {
       background: #ffffff;
       border-bottom: 1px solid var(--line);
-      padding: 18px 24px;
+      padding: 16px 24px;
     }
 
     .header-inner {
-      max-width: 1180px;
+      max-width: 1240px;
       margin: 0 auto;
       display: flex;
       gap: 16px;
@@ -66,15 +68,17 @@
     }
 
     main {
-      width: min(1180px, calc(100% - 32px));
-      margin: 22px auto;
+      width: min(1240px, calc(100% - 32px));
+      margin: 18px auto;
       display: grid;
-      gap: 16px;
+      gap: 14px;
     }
 
     .toolbar,
     .summary,
+    .filters,
     .empty-state,
+    .cards,
     .table-shell {
       background: var(--panel);
       border: 1px solid var(--line);
@@ -85,7 +89,7 @@
       display: grid;
       grid-template-columns: minmax(240px, 1fr) auto;
       gap: 14px;
-      align-items: center;
+      align-items: end;
       padding: 16px;
     }
 
@@ -101,19 +105,21 @@
       text-transform: uppercase;
     }
 
-    input[type="file"] {
-      width: 100%;
+    input,
+    select {
       min-height: 42px;
-      padding: 9px;
+      width: 100%;
+      padding: 9px 10px;
       border: 1px solid var(--line);
       border-radius: 6px;
       background: #ffffff;
       color: var(--ink);
+      font: inherit;
     }
 
     .actions {
       display: grid;
-      grid-template-columns: repeat(3, minmax(122px, 1fr));
+      grid-template-columns: repeat(3, minmax(126px, 1fr));
       gap: 8px;
     }
 
@@ -143,14 +149,28 @@
       background: #eef7f6;
     }
 
+    button.ghost {
+      background: #ffffff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    button.ghost:hover {
+      background: #f3f4f6;
+    }
+
+    button.active {
+      background: var(--blue);
+    }
+
     button:disabled {
       opacity: 0.45;
       cursor: not-allowed;
     }
 
     .summary {
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto;
       gap: 12px;
       align-items: center;
       padding: 12px 16px;
@@ -161,9 +181,132 @@
       color: var(--ink);
     }
 
-    .error {
-      color: var(--danger);
+    .summary-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px) minmax(180px, 240px) auto;
+      gap: 10px;
+      align-items: end;
+      padding: 14px 16px;
+    }
+
+    .filter-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .view-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .promo-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-title {
       font-weight: 700;
+      font-size: 16px;
+      overflow-wrap: anywhere;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .pill.ok {
+      background: #ecfdf3;
+      color: var(--green);
+    }
+
+    .pill.warn {
+      background: #fff7ed;
+      color: var(--amber);
+    }
+
+    .pill.bad {
+      background: #fef3f2;
+      color: var(--danger);
+    }
+
+    .card-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .card-field {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .card-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .card-label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .card-value {
+      overflow-wrap: anywhere;
+    }
+
+    details {
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--brand-dark);
+      font-weight: 700;
+    }
+
+    .detail-grid {
+      display: grid;
+      gap: 7px;
+      margin-top: 8px;
     }
 
     .empty-state {
@@ -181,7 +324,7 @@
 
     .table-shell {
       overflow: auto;
-      max-height: calc(100vh - 230px);
+      max-height: calc(100vh - 310px);
     }
 
     table {
@@ -216,8 +359,25 @@
       background: #fafafa;
     }
 
+    .error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
     .hidden {
       display: none;
+    }
+
+    @media (max-width: 900px) {
+      .toolbar,
+      .filters,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-actions {
+        justify-content: flex-start;
+      }
     }
 
     @media (max-width: 760px) {
@@ -225,21 +385,16 @@
         padding: 16px;
       }
 
-      .toolbar {
-        grid-template-columns: 1fr;
+      h1 {
+        font-size: 21px;
       }
 
       .actions {
         grid-template-columns: 1fr;
       }
 
-      .summary {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      h1 {
-        font-size: 21px;
+      .card-main {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -268,14 +423,46 @@
       </section>
 
       <section class="summary" aria-live="polite">
-        <span id="resultTitle"><strong>Resultado:</strong> cargá una planilla y elegí una opción.</span>
-        <span id="resultMeta"></span>
+        <div>
+          <span id="resultTitle"><strong>Resultado:</strong> cargá una planilla y elegí una opción.</span>
+          <span id="resultMeta"></span>
+        </div>
+        <div class="summary-actions">
+          <button id="downloadBtn" class="ghost" type="button" disabled>Descargar resultado</button>
+        </div>
+      </section>
+
+      <section id="filters" class="filters hidden" aria-label="Filtros">
+        <div class="filter-field">
+          <label for="searchInput">Buscar en resultados</label>
+          <input id="searchInput" type="search" placeholder="Producto, banco, promo, fecha...">
+        </div>
+
+        <div id="filterOneBox" class="filter-field hidden">
+          <label id="filterOneLabel" for="filterOne">Filtro 1</label>
+          <select id="filterOne"></select>
+        </div>
+
+        <div id="filterTwoBox" class="filter-field hidden">
+          <label id="filterTwoLabel" for="filterTwo">Filtro 2</label>
+          <select id="filterTwo"></select>
+        </div>
+
+        <div class="filter-field">
+          <label>Vista</label>
+          <div class="view-toggle">
+            <button id="cardsViewBtn" class="ghost active" type="button">Fichas</button>
+            <button id="tableViewBtn" class="ghost" type="button">Tabla</button>
+          </div>
+        </div>
       </section>
 
       <section id="emptyState" class="empty-state">
         <strong>No hay datos para mostrar</strong>
         La tabla aparecerá acá cuando cargues el archivo y presiones un botón.
       </section>
+
+      <section id="cards" class="cards hidden" aria-label="Promociones encontradas"></section>
 
       <section id="tableShell" class="table-shell hidden" aria-label="Datos encontrados">
         <table id="resultTable"></table>
@@ -284,11 +471,23 @@
   </div>
 
   <script>
+    const STORAGE_KEY = "promos-activas-ultima-opcion";
+    const DATE_WORDS = ["fecha", "vigencia", "hasta", "vto", "vencimiento", "fin"];
+    const PRIORITY_WORDS = ["promo", "promocion", "beneficio", "producto", "descripcion", "detalle", "banco", "tarjeta", "descuento", "vigencia", "hasta", "medio", "rubro", "sucursal"];
+    const FILTER_WORDS = ["banco", "tarjeta", "medio", "rubro", "categoria", "tipo", "descuento"];
+
     const state = {
       workbook: null,
       fileName: "",
       activeData: null,
-      usefulData: null
+      usefulData: null,
+      currentTitle: "",
+      currentSource: "",
+      currentHeaders: [],
+      baseRecords: [],
+      visibleRecords: [],
+      selectedFilters: [],
+      viewMode: "cards"
     };
 
     const fileInput = document.getElementById("excelFile");
@@ -296,6 +495,18 @@
     const resultTitle = document.getElementById("resultTitle");
     const resultMeta = document.getElementById("resultMeta");
     const emptyState = document.getElementById("emptyState");
+    const cards = document.getElementById("cards");
+    const filters = document.getElementById("filters");
+    const searchInput = document.getElementById("searchInput");
+    const filterOneBox = document.getElementById("filterOneBox");
+    const filterTwoBox = document.getElementById("filterTwoBox");
+    const filterOneLabel = document.getElementById("filterOneLabel");
+    const filterTwoLabel = document.getElementById("filterTwoLabel");
+    const filterOne = document.getElementById("filterOne");
+    const filterTwo = document.getElementById("filterTwo");
+    const cardsViewBtn = document.getElementById("cardsViewBtn");
+    const tableViewBtn = document.getElementById("tableViewBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
     const tableShell = document.getElementById("tableShell");
     const resultTable = document.getElementById("resultTable");
     const buttons = {
@@ -308,6 +519,12 @@
     buttons.suipacha.addEventListener("click", () => showBranch("Suipacha"));
     buttons.bariloche.addEventListener("click", () => showBranch("Bariloche"));
     buttons.datos.addEventListener("click", showUsefulData);
+    searchInput.addEventListener("input", applyFilters);
+    filterOne.addEventListener("change", applyFilters);
+    filterTwo.addEventListener("change", applyFilters);
+    cardsViewBtn.addEventListener("click", () => setViewMode("cards"));
+    tableViewBtn.addEventListener("click", () => setViewMode("table"));
+    downloadBtn.addEventListener("click", downloadResults);
 
     function normalizeText(value) {
       return String(value ?? "")
@@ -358,10 +575,11 @@
         fileStatus.textContent = `Planilla cargada: ${file.name}`;
         setButtonsEnabled(true);
         resultTitle.innerHTML = "<strong>Resultado:</strong> elegí Suipacha, Bariloche o Datos útiles.";
-        resultMeta.textContent = `${state.workbook.SheetNames.length} pestaña(s) detectada(s)`;
+        resultMeta.textContent = ` ${state.workbook.SheetNames.length} pestaña(s) detectada(s)`;
+        openLastSelection();
       } catch (error) {
         console.error(error);
-        showError("No se pudo leer la planilla. Probá con un archivo Excel válido.");
+        showError(readableError(error));
         setButtonsEnabled(false);
       }
     }
@@ -371,10 +589,15 @@
       const mainName = workbook.SheetNames.find((name) => name !== usefulName);
 
       if (!mainName) {
-        throw new Error("No se encontró una pestaña principal.");
+        throw new Error("No se encontró una pestaña principal para las promociones.");
       }
 
-      return sheetToRecords(workbook.Sheets[mainName]);
+      const data = sheetToRecords(workbook.Sheets[mainName]);
+      if (!data.headers.length || !data.records.length) {
+        throw new Error(`La pestaña ${mainName} no tiene datos para mostrar.`);
+      }
+
+      return data;
     }
 
     function readUsefulSheet(workbook) {
@@ -455,6 +678,17 @@
       });
     }
 
+    function openLastSelection() {
+      const last = localStorage.getItem(STORAGE_KEY);
+      if (last === "suipacha") {
+        showBranch("Suipacha");
+      } else if (last === "bariloche") {
+        showBranch("Bariloche");
+      } else if (last === "datos") {
+        showUsefulData();
+      }
+    }
+
     function showBranch(branchName) {
       if (!state.activeData) {
         showError("Primero cargá una planilla.");
@@ -466,7 +700,7 @@
       );
 
       if (!sucursalHeader) {
-        showError("No se encontró la columna Sucursal en la pestaña principal.");
+        showError("No se encontró la columna Sucursal en la pestaña principal. Revisá que el encabezado se llame exactamente Sucursal.");
         return;
       }
 
@@ -475,39 +709,265 @@
         normalizeText(record[sucursalHeader]).includes(needle)
       );
 
-      renderTable(state.activeData.headers, records, branchName, "Sucursal");
+      localStorage.setItem(STORAGE_KEY, normalizeText(branchName));
+      setActiveButton(normalizeText(branchName));
+      renderResults(state.activeData.headers, records, branchName, "Sucursal");
     }
 
     function showUsefulData() {
       if (!state.usefulData || state.usefulData.missing) {
-        showError("No se encontró la pestaña DATOS UTILES en la planilla.");
+        showError("No se encontró la pestaña DATOS UTILES en la planilla. Revisá que exista con ese nombre.");
         return;
       }
 
-      renderTable(state.usefulData.headers, state.usefulData.records, "Datos útiles", "Pestaña DATOS UTILES");
+      if (!state.usefulData.records.length) {
+        showError("La pestaña DATOS UTILES está vacía.");
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY, "datos");
+      setActiveButton("datos");
+      renderResults(state.usefulData.headers, state.usefulData.records, "Datos útiles", "Pestaña DATOS UTILES");
     }
 
-    function renderTable(headers, records, title, source) {
-      resultTitle.innerHTML = `<strong>Resultado:</strong> ${escapeHtml(title)}`;
-      resultMeta.textContent = `${records.length} fila(s) encontradas - ${source}`;
+    function renderResults(headers, records, title, source) {
+      state.currentTitle = title;
+      state.currentSource = source;
+      state.currentHeaders = headers;
+      state.baseRecords = records;
+      searchInput.value = "";
+      setupQuickFilters(headers, records);
+      filters.classList.toggle("hidden", records.length === 0);
+      downloadBtn.disabled = records.length === 0;
+      applyFilters();
+    }
 
-      if (!records.length) {
-        resultTable.innerHTML = "";
-        tableShell.classList.add("hidden");
-        emptyState.classList.remove("hidden");
-        emptyState.innerHTML = `<strong>No se encontraron filas</strong>No hay datos para ${escapeHtml(title)} en la planilla cargada.`;
+    function setupQuickFilters(headers, records) {
+      const candidates = headers
+        .filter((header) => FILTER_WORDS.some((word) => normalizeText(header).includes(word)))
+        .map((header) => ({
+          header,
+          values: uniqueValues(records, header)
+        }))
+        .filter((item) => item.values.length > 1 && item.values.length <= 30)
+        .slice(0, 2);
+
+      state.selectedFilters = candidates.map((item) => item.header);
+      setupFilterControl(filterOneBox, filterOneLabel, filterOne, candidates[0]);
+      setupFilterControl(filterTwoBox, filterTwoLabel, filterTwo, candidates[1]);
+    }
+
+    function setupFilterControl(box, label, select, config) {
+      if (!config) {
+        box.classList.add("hidden");
+        select.innerHTML = "";
         return;
       }
 
-      emptyState.classList.add("hidden");
-      tableShell.classList.remove("hidden");
+      box.classList.remove("hidden");
+      label.textContent = config.header;
+      select.innerHTML = `<option value="">Todos</option>${config.values.map((value) =>
+        `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
+      ).join("")}`;
+    }
 
+    function uniqueValues(records, header) {
+      return Array.from(new Set(records.map((record) => cleanCell(record[header])).filter(Boolean)))
+        .sort((a, b) => a.localeCompare(b, "es"));
+    }
+
+    function applyFilters() {
+      const query = normalizeText(searchInput.value);
+      const activeFilterValues = [
+        { header: state.selectedFilters[0], value: filterOne.value },
+        { header: state.selectedFilters[1], value: filterTwo.value }
+      ].filter((item) => item.header && item.value);
+
+      state.visibleRecords = state.baseRecords.filter((record) => {
+        const matchesSearch = !query || Object.values(record).some((value) => normalizeText(value).includes(query));
+        const matchesFilters = activeFilterValues.every((item) => cleanCell(record[item.header]) === item.value);
+        return matchesSearch && matchesFilters;
+      });
+
+      renderVisibleResults();
+    }
+
+    function renderVisibleResults() {
+      resultTitle.innerHTML = `<strong>Resultado:</strong> ${escapeHtml(state.currentTitle || "Sin selección")}`;
+      resultMeta.textContent = state.baseRecords.length
+        ? ` ${state.visibleRecords.length} de ${state.baseRecords.length} fila(s) - ${state.currentSource}`
+        : "";
+
+      if (!state.baseRecords.length) {
+        showEmpty(`No hay datos para ${state.currentTitle} en la planilla cargada.`);
+        return;
+      }
+
+      if (!state.visibleRecords.length) {
+        cards.classList.add("hidden");
+        tableShell.classList.add("hidden");
+        emptyState.classList.remove("hidden");
+        emptyState.innerHTML = "<strong>No se encontraron coincidencias</strong>Probá limpiar el buscador o los filtros.";
+        downloadBtn.disabled = true;
+        return;
+      }
+
+      downloadBtn.disabled = false;
+      emptyState.classList.add("hidden");
+      renderCards();
+      renderTable();
+      applyViewVisibility();
+    }
+
+    function renderCards() {
+      const headers = state.currentHeaders;
+      const primaryHeaders = pickPrimaryHeaders(headers);
+      const titleHeader = primaryHeaders[0] || headers[0];
+      const dateHeader = findDateHeader(headers);
+
+      cards.innerHTML = state.visibleRecords.map((record) => {
+        const status = getValidityStatus(record, dateHeader);
+        const summaryFields = primaryHeaders
+          .filter((header) => header !== titleHeader)
+          .slice(0, 5);
+        const hiddenFields = headers.filter((header) => cleanCell(record[header]) !== "" && !summaryFields.includes(header) && header !== titleHeader);
+
+        return `
+          <article class="promo-card">
+            <div class="card-top">
+              <div class="card-title">${escapeHtml(record[titleHeader] || "Sin título")}</div>
+              ${status ? `<span class="pill ${status.kind}">${escapeHtml(status.label)}</span>` : ""}
+            </div>
+            <div class="card-main">
+              ${summaryFields.map((header) => fieldHtml(header, record[header])).join("")}
+            </div>
+            ${hiddenFields.length ? `
+              <details>
+                <summary>Ver detalle completo</summary>
+                <div class="detail-grid">
+                  ${hiddenFields.map((header) => fieldHtml(header, record[header], true)).join("")}
+                </div>
+              </details>
+            ` : ""}
+          </article>
+        `;
+      }).join("");
+    }
+
+    function pickPrimaryHeaders(headers) {
+      const picked = [];
+      PRIORITY_WORDS.forEach((word) => {
+        const found = headers.find((header) => normalizeText(header).includes(word) && !picked.includes(header));
+        if (found) {
+          picked.push(found);
+        }
+      });
+
+      headers.forEach((header) => {
+        if (picked.length < 6 && !picked.includes(header)) {
+          picked.push(header);
+        }
+      });
+
+      return picked;
+    }
+
+    function fieldHtml(header, value, full = false) {
+      return `
+        <div class="card-field ${full ? "full" : ""}">
+          <div class="card-label">${escapeHtml(header)}</div>
+          <div class="card-value">${escapeHtml(value || "-")}</div>
+        </div>
+      `;
+    }
+
+    function findDateHeader(headers) {
+      return headers.find((header) => DATE_WORDS.some((word) => normalizeText(header).includes(word)));
+    }
+
+    function getValidityStatus(record, dateHeader) {
+      if (!dateHeader) {
+        return null;
+      }
+
+      const date = parseSpanishDate(record[dateHeader]);
+      if (!date) {
+        return null;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
+      const diffDays = Math.round((date - today) / 86400000);
+
+      if (diffDays < 0) {
+        return { label: "Vencida", kind: "bad" };
+      }
+
+      if (diffDays <= 7) {
+        return { label: "Por vencer", kind: "warn" };
+      }
+
+      return { label: "Vigente", kind: "ok" };
+    }
+
+    function parseSpanishDate(value) {
+      const text = cleanCell(value);
+      const match = text.match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+      if (!match) {
+        return null;
+      }
+
+      const day = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      const rawYear = Number(match[3]);
+      const year = rawYear < 100 ? 2000 + rawYear : rawYear;
+      const date = new Date(year, month, day);
+
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function renderTable() {
+      const headers = state.currentHeaders;
       const thead = `<thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead>`;
-      const tbody = `<tbody>${records.map((record) => (
+      const tbody = `<tbody>${state.visibleRecords.map((record) => (
         `<tr>${headers.map((header) => `<td>${escapeHtml(record[header])}</td>`).join("")}</tr>`
       )).join("")}</tbody>`;
 
       resultTable.innerHTML = thead + tbody;
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      cardsViewBtn.classList.toggle("active", mode === "cards");
+      tableViewBtn.classList.toggle("active", mode === "table");
+      applyViewVisibility();
+    }
+
+    function applyViewVisibility() {
+      const hasData = state.visibleRecords.length > 0;
+      cards.classList.toggle("hidden", !hasData || state.viewMode !== "cards");
+      tableShell.classList.toggle("hidden", !hasData || state.viewMode !== "table");
+    }
+
+    function setActiveButton(activeKey) {
+      Object.entries(buttons).forEach(([key, button]) => {
+        button.classList.toggle("active", key === activeKey);
+      });
+    }
+
+    function downloadResults() {
+      if (!state.visibleRecords.length || !window.XLSX) {
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(state.visibleRecords, {
+        header: state.currentHeaders
+      });
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Resultado");
+      const safeTitle = normalizeText(state.currentTitle).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "resultado";
+      XLSX.writeFile(workbook, `promos-${safeTitle}.xlsx`);
     }
 
     function resetView() {
@@ -515,22 +975,48 @@
       state.fileName = "";
       state.activeData = null;
       state.usefulData = null;
+      state.currentTitle = "";
+      state.currentSource = "";
+      state.currentHeaders = [];
+      state.baseRecords = [];
+      state.visibleRecords = [];
+      state.selectedFilters = [];
       resultTable.innerHTML = "";
+      cards.innerHTML = "";
       resultMeta.textContent = "";
       resultTitle.innerHTML = "<strong>Resultado:</strong> cargá una planilla y elegí una opción.";
-      emptyState.classList.remove("hidden");
-      emptyState.innerHTML = "<strong>No hay datos para mostrar</strong>La tabla aparecerá acá cuando cargues el archivo y presiones un botón.";
+      filters.classList.add("hidden");
+      downloadBtn.disabled = true;
+      setActiveButton("");
+      showEmpty("La tabla aparecerá acá cuando cargues el archivo y presiones un botón.", "No hay datos para mostrar");
+    }
+
+    function showEmpty(message, title = "Sin resultados") {
+      cards.classList.add("hidden");
       tableShell.classList.add("hidden");
+      emptyState.classList.remove("hidden");
+      emptyState.innerHTML = `<strong>${escapeHtml(title)}</strong>${escapeHtml(message)}`;
     }
 
     function showError(message) {
       resultTitle.innerHTML = `<strong class="error">Error:</strong> ${escapeHtml(message)}`;
       resultMeta.textContent = "";
       resultTable.innerHTML = "";
-      tableShell.classList.add("hidden");
-      emptyState.classList.remove("hidden");
-      emptyState.innerHTML = `<strong>Sin resultados</strong>${escapeHtml(message)}`;
+      cards.innerHTML = "";
+      filters.classList.add("hidden");
+      downloadBtn.disabled = true;
+      showEmpty(message, "Sin resultados");
       fileStatus.textContent = state.fileName ? `Planilla cargada: ${state.fileName}` : "Sin planilla cargada";
+    }
+
+    function readableError(error) {
+      const message = error && error.message ? error.message : "";
+
+      if (message) {
+        return message;
+      }
+
+      return "No se pudo leer la planilla. Probá con un archivo Excel válido.";
     }
 
     function escapeHtml(value) {
