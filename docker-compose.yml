@@ -3,5 +3,5 @@ services:
     build: .
     container_name: promos-activas
     ports:
-      - "8080:80"
+      - "6700:80"
     restart: unless-stopped

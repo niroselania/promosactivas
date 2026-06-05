@@ -15,13 +15,13 @@ App HTML para cargar una planilla Excel y consultar promociones por sucursal.
 
 ```bash
 docker build -t promos-activas .
-docker run -d --name promos-activas -p 8080:80 promos-activas
+docker run -d --name promos-activas -p 6700:80 promos-activas
 ```
 
 Abrir:
 
 ```text
-http://localhost:8080
+http://localhost:6700
 ```
 
 ## Usar en Portainer
@@ -34,7 +34,7 @@ http://localhost:8080
 6. Usar `docker-compose.yml`.
 7. Deploy.
 
-La app queda publicada en el puerto `8080` del servidor, salvo que cambies el puerto en `docker-compose.yml`.
+La app queda publicada en el puerto `6700` del servidor, salvo que cambies el puerto en `docker-compose.yml`.
 
 ## Subir a GitHub
 
