@@ -28,6 +28,10 @@ const server = http.createServer(async (req, res) => {
       return sendSavedData(res);
     }
 
+    if (req.url === "/api/health" && req.method === "GET") {
+      return sendJson(res, 200, { ok: true });
+    }
+
     if (req.url === "/api/data" && req.method === "POST") {
       return saveData(req, res);
     }

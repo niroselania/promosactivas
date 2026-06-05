@@ -45,6 +45,8 @@ La app queda publicada en el puerto `6700` del servidor, salvo que cambies el pu
 
 El stack usa un volumen llamado `promos_activas_data`. Ahi se guarda la ultima planilla procesada para que cualquier ordenador que abra la app vea los datos sin volver a subir el archivo.
 
+Importante: la planilla solo queda compartida si se carga desde la URL del servidor, por ejemplo `http://TU_SERVIDOR:6700`. Si se abre el archivo `index.html` suelto en una computadora, no puede guardar datos para otros equipos.
+
 ## Subir a GitHub
 
 ```bash

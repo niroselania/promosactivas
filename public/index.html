@@ -404,7 +404,10 @@
     <header>
       <div class="header-inner">
         <h1>Promos activas</h1>
-        <div class="status" id="fileStatus">Sin planilla cargada</div>
+        <div class="status">
+          <div id="fileStatus">Sin planilla cargada</div>
+          <div id="serverStatus">Revisando servidor...</div>
+        </div>
       </div>
     </header>
 
@@ -494,6 +497,7 @@
 
     const fileInput = document.getElementById("excelFile");
     const fileStatus = document.getElementById("fileStatus");
+    const serverStatus = document.getElementById("serverStatus");
     const resultTitle = document.getElementById("resultTitle");
     const resultMeta = document.getElementById("resultMeta");
     const emptyState = document.getElementById("emptyState");
@@ -579,6 +583,7 @@
         state.usefulData = readUsefulSheet(state.workbook);
         await saveServerData();
         fileStatus.textContent = `Planilla guardada: ${file.name}`;
+        serverStatus.textContent = "Servidor conectado - datos disponibles para otros equipos";
         setButtonsEnabled(true);
         resultTitle.innerHTML = "<strong>Resultado:</strong> elegí Suipacha, Bariloche o Datos útiles.";
         resultMeta.textContent = ` ${state.sheetCount} pestaña(s) detectada(s) - disponible para otros equipos`;
@@ -601,6 +606,8 @@
         const payload = await response.json();
 
         if (!payload.exists) {
+          serverStatus.textContent = "Servidor conectado - sin planilla guardada";
+          resultTitle.innerHTML = "<strong>Resultado:</strong> todavía no hay una planilla guardada en el servidor.";
           return;
         }
 
@@ -611,12 +618,14 @@
         state.activeData = data.activeData;
         state.usefulData = data.usefulData;
         fileStatus.textContent = `Planilla guardada: ${state.fileName}`;
+        serverStatus.textContent = "Servidor conectado - datos cargados";
         setButtonsEnabled(true);
         resultTitle.innerHTML = "<strong>Resultado:</strong> datos cargados desde el servidor.";
         resultMeta.textContent = state.savedAt ? ` Ultima actualización: ${formatDateTime(state.savedAt)}` : "";
         openLastSelectionOrDefault();
       } catch (error) {
         console.error(error);
+        serverStatus.textContent = "No conectado al servidor de datos";
         resultMeta.textContent = " No se pudo revisar si hay una planilla guardada.";
       }
     }
