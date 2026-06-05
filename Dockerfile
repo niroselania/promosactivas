@@ -1,6 +1,14 @@
-FROM nginx:1.27-alpine
+FROM node:22-alpine
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY public/ /usr/share/nginx/html/
+WORKDIR /app
+
+COPY package.json server.js ./
+COPY public/ ./public/
+
+RUN mkdir -p data
+
+ENV PORT=80
 
 EXPOSE 80
+
+CMD ["node", "server.js"]

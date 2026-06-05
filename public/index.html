@@ -479,6 +479,8 @@
     const state = {
       workbook: null,
       fileName: "",
+      savedAt: "",
+      sheetCount: 0,
       activeData: null,
       usefulData: null,
       currentTitle: "",
@@ -525,6 +527,7 @@
     cardsViewBtn.addEventListener("click", () => setViewMode("cards"));
     tableViewBtn.addEventListener("click", () => setViewMode("table"));
     downloadBtn.addEventListener("click", downloadResults);
+    loadSavedData();
 
     function normalizeText(value) {
       return String(value ?? "")
@@ -570,17 +573,73 @@
           cellDates: true
         });
         state.fileName = file.name;
+        state.savedAt = new Date().toISOString();
+        state.sheetCount = state.workbook.SheetNames.length;
         state.activeData = readMainSheet(state.workbook);
         state.usefulData = readUsefulSheet(state.workbook);
-        fileStatus.textContent = `Planilla cargada: ${file.name}`;
+        await saveServerData();
+        fileStatus.textContent = `Planilla guardada: ${file.name}`;
         setButtonsEnabled(true);
         resultTitle.innerHTML = "<strong>Resultado:</strong> elegí Suipacha, Bariloche o Datos útiles.";
-        resultMeta.textContent = ` ${state.workbook.SheetNames.length} pestaña(s) detectada(s)`;
-        openLastSelection();
+        resultMeta.textContent = ` ${state.sheetCount} pestaña(s) detectada(s) - disponible para otros equipos`;
+        openLastSelectionOrDefault();
       } catch (error) {
         console.error(error);
         showError(readableError(error));
         setButtonsEnabled(false);
+      }
+    }
+
+    async function loadSavedData() {
+      try {
+        const response = await fetch("/api/data");
+
+        if (!response.ok) {
+          throw new Error("No se pudo consultar la planilla guardada.");
+        }
+
+        const payload = await response.json();
+
+        if (!payload.exists) {
+          return;
+        }
+
+        const data = payload.data;
+        state.fileName = data.fileName || "planilla guardada";
+        state.savedAt = data.savedAt || "";
+        state.sheetCount = Number(data.sheetCount || 0);
+        state.activeData = data.activeData;
+        state.usefulData = data.usefulData;
+        fileStatus.textContent = `Planilla guardada: ${state.fileName}`;
+        setButtonsEnabled(true);
+        resultTitle.innerHTML = "<strong>Resultado:</strong> datos cargados desde el servidor.";
+        resultMeta.textContent = state.savedAt ? ` Ultima actualización: ${formatDateTime(state.savedAt)}` : "";
+        openLastSelectionOrDefault();
+      } catch (error) {
+        console.error(error);
+        resultMeta.textContent = " No se pudo revisar si hay una planilla guardada.";
+      }
+    }
+
+    async function saveServerData() {
+      const payload = {
+        fileName: state.fileName,
+        savedAt: state.savedAt,
+        sheetCount: state.sheetCount,
+        activeData: state.activeData,
+        usefulData: state.usefulData
+      };
+      const response = await fetch("/api/data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || "La planilla se leyó, pero no se pudo guardar en el servidor.");
       }
     }
 
@@ -678,7 +737,7 @@
       });
     }
 
-    function openLastSelection() {
+    function openLastSelectionOrDefault() {
       const last = localStorage.getItem(STORAGE_KEY);
       if (last === "suipacha") {
         showBranch("Suipacha");
@@ -686,6 +745,8 @@
         showBranch("Bariloche");
       } else if (last === "datos") {
         showUsefulData();
+      } else {
+        showBranch("Suipacha");
       }
     }
 
@@ -973,6 +1034,8 @@
     function resetView() {
       state.workbook = null;
       state.fileName = "";
+      state.savedAt = "";
+      state.sheetCount = 0;
       state.activeData = null;
       state.usefulData = null;
       state.currentTitle = "";
@@ -1006,7 +1069,20 @@
       filters.classList.add("hidden");
       downloadBtn.disabled = true;
       showEmpty(message, "Sin resultados");
-      fileStatus.textContent = state.fileName ? `Planilla cargada: ${state.fileName}` : "Sin planilla cargada";
+      fileStatus.textContent = state.fileName ? `Planilla guardada: ${state.fileName}` : "Sin planilla cargada";
+    }
+
+    function formatDateTime(value) {
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return "";
+      }
+
+      return date.toLocaleString("es-AR", {
+        dateStyle: "short",
+        timeStyle: "short"
+      });
     }
 
     function readableError(error) {

@@ -4,4 +4,9 @@ services:
     container_name: promos-activas
     ports:
       - "6700:80"
+    volumes:
+      - promos_activas_data:/app/data
     restart: unless-stopped
+
+volumes:
+  promos_activas_data:

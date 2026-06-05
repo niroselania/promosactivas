@@ -1,6 +1,6 @@
 # Promos activas
 
-App HTML para cargar una planilla Excel y consultar promociones por sucursal.
+App web para cargar una planilla Excel, guardar la informacion en el servidor y consultar promociones por sucursal.
 
 ## Que hace
 
@@ -16,12 +16,13 @@ App HTML para cargar una planilla Excel y consultar promociones por sucursal.
 - Marca promociones como vigente, por vencer o vencida cuando detecta una columna de fecha/vigencia.
 - Permite descargar el resultado filtrado en Excel.
 - Recuerda la ultima opcion usada al cargar una nueva planilla.
+- Guarda la ultima planilla cargada en el servidor, para que otros equipos puedan verla sin subirla otra vez.
 
 ## Ejecutar con Docker
 
 ```bash
 docker build -t promos-activas .
-docker run -d --name promos-activas -p 6700:80 promos-activas
+docker run -d --name promos-activas -p 6700:80 -v promos-activas-data:/app/data promos-activas
 ```
 
 Abrir:
@@ -41,6 +42,8 @@ http://localhost:6700
 7. Deploy.
 
 La app queda publicada en el puerto `6700` del servidor, salvo que cambies el puerto en `docker-compose.yml`.
+
+El stack usa un volumen llamado `promos_activas_data`. Ahi se guarda la ultima planilla procesada para que cualquier ordenador que abra la app vea los datos sin volver a subir el archivo.
 
 ## Subir a GitHub
 
