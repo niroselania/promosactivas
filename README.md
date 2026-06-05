@@ -10,7 +10,8 @@ App web para cargar una planilla Excel, guardar la informacion en el servidor y 
 - Si una fila dice `Suipacha/Bariloche`, aparece en ambos botones.
 - Boton **Datos utiles**: muestra la informacion de la pestaña `DATOS UTILES`.
 - Muestra los nombres reales de las columnas, no letras como Columna A o Columna B.
-- Muestra los resultados en vista de fichas o tabla.
+- Muestra los resultados solo en vista de tabla.
+- La columna `DESCRIPCION DE LA PROMO` se muestra mas ancha y ordena los items con check para facilitar la lectura.
 - Incluye buscador dentro de los resultados.
 - Genera botones de filtro para `Operadora de Tarjeta`.
 - Genera botones para `Estado de vigencia`, por ejemplo `ACTIVADA` y `DESACTIVADA`.

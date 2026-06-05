@@ -78,7 +78,6 @@
     .summary,
     .filters,
     .empty-state,
-    .cards,
     .table-shell {
       background: var(--panel);
       border: 1px solid var(--line);
@@ -200,12 +199,6 @@
       gap: 6px;
     }
 
-    .view-toggle {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-
     .chip-group {
       display: flex;
       flex-wrap: wrap;
@@ -229,13 +222,6 @@
       border-color: var(--blue);
       background: var(--blue);
       color: #ffffff;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 12px;
-      padding: 12px;
     }
 
     .promo-card {
@@ -372,10 +358,34 @@
 
     th.description-cell,
     td.description-cell {
-      min-width: 430px;
-      max-width: 640px;
+      min-width: 560px;
+      max-width: 780px;
       line-height: 1.45;
       white-space: normal;
+    }
+
+    .promo-description {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .promo-check-line {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 6px;
+      align-items: start;
+    }
+
+    .promo-check {
+      color: var(--green);
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .promo-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     th {
@@ -484,21 +494,12 @@
           <div id="statusButtons" class="chip-group"></div>
         </div>
 
-        <div class="filter-field">
-          <label>Vista</label>
-          <div class="view-toggle">
-            <button id="cardsViewBtn" class="ghost active" type="button">Fichas</button>
-            <button id="tableViewBtn" class="ghost" type="button">Tabla</button>
-          </div>
-        </div>
       </section>
 
       <section id="emptyState" class="empty-state">
         <strong>No hay datos para mostrar</strong>
         La tabla aparecerá acá cuando cargues el archivo y presiones un botón.
       </section>
-
-      <section id="cards" class="cards hidden" aria-label="Promociones encontradas"></section>
 
       <section id="tableShell" class="table-shell hidden" aria-label="Datos encontrados">
         <table id="resultTable"></table>
@@ -526,8 +527,7 @@
       operatorHeader: "",
       statusHeader: "",
       selectedOperator: "",
-      selectedStatus: "",
-      viewMode: "cards"
+      selectedStatus: ""
     };
 
     const fileInput = document.getElementById("excelFile");
@@ -536,15 +536,12 @@
     const resultTitle = document.getElementById("resultTitle");
     const resultMeta = document.getElementById("resultMeta");
     const emptyState = document.getElementById("emptyState");
-    const cards = document.getElementById("cards");
     const filters = document.getElementById("filters");
     const searchInput = document.getElementById("searchInput");
     const operatorFilterBox = document.getElementById("operatorFilterBox");
     const statusFilterBox = document.getElementById("statusFilterBox");
     const operatorButtons = document.getElementById("operatorButtons");
     const statusButtons = document.getElementById("statusButtons");
-    const cardsViewBtn = document.getElementById("cardsViewBtn");
-    const tableViewBtn = document.getElementById("tableViewBtn");
     const downloadBtn = document.getElementById("downloadBtn");
     const tableShell = document.getElementById("tableShell");
     const resultTable = document.getElementById("resultTable");
@@ -561,8 +558,6 @@
     searchInput.addEventListener("input", applyFilters);
     operatorButtons.addEventListener("click", handleOperatorClick);
     statusButtons.addEventListener("click", handleStatusClick);
-    cardsViewBtn.addEventListener("click", () => setViewMode("cards"));
-    tableViewBtn.addEventListener("click", () => setViewMode("table"));
     downloadBtn.addEventListener("click", downloadResults);
     loadSavedData();
 
@@ -952,7 +947,6 @@
       }
 
       if (!state.visibleRecords.length) {
-        cards.classList.add("hidden");
         tableShell.classList.add("hidden");
         emptyState.classList.remove("hidden");
         emptyState.innerHTML = "<strong>No se encontraron coincidencias</strong>Probá limpiar el buscador o los filtros.";
@@ -962,44 +956,8 @@
 
       downloadBtn.disabled = false;
       emptyState.classList.add("hidden");
-      renderCards();
       renderTable();
-      applyViewVisibility();
-    }
-
-    function renderCards() {
-      const headers = state.currentHeaders;
-      const primaryHeaders = pickPrimaryHeaders(headers);
-      const titleHeader = primaryHeaders[0] || headers[0];
-      const dateHeader = findDateHeader(headers);
-
-      cards.innerHTML = state.visibleRecords.map((record) => {
-        const status = getValidityStatus(record, dateHeader);
-        const summaryFields = primaryHeaders
-          .filter((header) => header !== titleHeader)
-          .slice(0, 5);
-        const hiddenFields = headers.filter((header) => cleanCell(record[header]) !== "" && !summaryFields.includes(header) && header !== titleHeader);
-
-        return `
-          <article class="promo-card">
-            <div class="card-top">
-              <div class="card-title">${escapeHtml(record[titleHeader] || "Sin título")}</div>
-              ${status ? `<span class="pill ${status.kind}">${escapeHtml(status.label)}</span>` : ""}
-            </div>
-            <div class="card-main">
-              ${summaryFields.map((header) => fieldHtml(header, record[header])).join("")}
-            </div>
-            ${hiddenFields.length ? `
-              <details>
-                <summary>Ver detalle completo</summary>
-                <div class="detail-grid">
-                  ${hiddenFields.map((header) => fieldHtml(header, record[header], true)).join("")}
-                </div>
-              </details>
-            ` : ""}
-          </article>
-        `;
-      }).join("");
+      tableShell.classList.remove("hidden");
     }
 
     function pickPrimaryHeaders(headers) {
@@ -1079,28 +1037,54 @@
       const headers = state.currentHeaders;
       const thead = `<thead><tr>${headers.map((header) => `<th class="${columnClass(header)}">${escapeHtml(header)}</th>`).join("")}</tr></thead>`;
       const tbody = `<tbody>${state.visibleRecords.map((record) => (
-        `<tr>${headers.map((header) => `<td class="${columnClass(header)}">${escapeHtml(record[header])}</td>`).join("")}</tr>`
+        `<tr>${headers.map((header) => `<td class="${columnClass(header)}">${cellHtml(header, record[header])}</td>`).join("")}</tr>`
       )).join("")}</tbody>`;
 
       resultTable.innerHTML = thead + tbody;
     }
 
+    function cellHtml(header, value) {
+      if (columnClass(header) === "description-cell") {
+        return descriptionHtml(value);
+      }
+
+      return escapeHtml(value);
+    }
+
+    function descriptionHtml(value) {
+      const text = cleanCell(value);
+
+      if (!text) {
+        return "";
+      }
+
+      const normalized = text
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .replace(/\s*(✔️|✔|✅)\s*/g, "\n$1 ");
+      const lines = normalized
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      if (!lines.length) {
+        return escapeHtml(text);
+      }
+
+      return `<div class="promo-description">${lines.map((line) => {
+        const match = line.match(/^(✔️|✔|✅)\s*(.*)$/);
+
+        if (!match) {
+          return `<div class="promo-text">${escapeHtml(line)}</div>`;
+        }
+
+        return `<div class="promo-check-line"><span class="promo-check">${escapeHtml(match[1])}</span><span class="promo-text">${escapeHtml(match[2])}</span></div>`;
+      }).join("")}</div>`;
+    }
+
     function columnClass(header) {
       const normalized = normalizeText(header);
       return normalized.includes("descripcion") && normalized.includes("promo") ? "description-cell" : "";
-    }
-
-    function setViewMode(mode) {
-      state.viewMode = mode;
-      cardsViewBtn.classList.toggle("active", mode === "cards");
-      tableViewBtn.classList.toggle("active", mode === "table");
-      applyViewVisibility();
-    }
-
-    function applyViewVisibility() {
-      const hasData = state.visibleRecords.length > 0;
-      cards.classList.toggle("hidden", !hasData || state.viewMode !== "cards");
-      tableShell.classList.toggle("hidden", !hasData || state.viewMode !== "table");
     }
 
     function setActiveButton(activeKey) {
@@ -1140,7 +1124,6 @@
       state.selectedOperator = "";
       state.selectedStatus = "";
       resultTable.innerHTML = "";
-      cards.innerHTML = "";
       resultMeta.textContent = "";
       resultTitle.innerHTML = "<strong>Resultado:</strong> cargá una planilla y elegí una opción.";
       filters.classList.add("hidden");
@@ -1150,7 +1133,6 @@
     }
 
     function showEmpty(message, title = "Sin resultados") {
-      cards.classList.add("hidden");
       tableShell.classList.add("hidden");
       emptyState.classList.remove("hidden");
       emptyState.innerHTML = `<strong>${escapeHtml(title)}</strong>${escapeHtml(message)}`;
@@ -1160,7 +1142,6 @@
       resultTitle.innerHTML = `<strong class="error">Error:</strong> ${escapeHtml(message)}`;
       resultMeta.textContent = "";
       resultTable.innerHTML = "";
-      cards.innerHTML = "";
       filters.classList.add("hidden");
       downloadBtn.disabled = true;
       showEmpty(message, "Sin resultados");
